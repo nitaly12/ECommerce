@@ -24,7 +24,7 @@ export default function UpdateProductAction() {
 
             {/* Modal */}
             {menuOpen && (
-                <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-screen bg-black bg-opacity-20">
+                <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-screen bg-opacity-20 inset-0 backdrop-blur-sm bg-white/0 ">
                     <div className="relative p-4 w-full max-w-md">
                         <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
                             {/* Modal header */}
@@ -60,7 +60,7 @@ export default function UpdateProductAction() {
                                 <div className="grid gap-4 mb-4 grid-cols-2">
                                     <div className="col-span-2">
                                         <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Name
+                                            Product Name
                                         </label>
                                         <input
                                             type="text"
@@ -72,15 +72,14 @@ export default function UpdateProductAction() {
                                     </div>
 
                                     <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Price
+                                        <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Color
                                         </label>
                                         <input
-                                            type="number"
-                                            name="price"
-                                            id="price"
+                                            type="color"
+                                            name="color"
+                                            id="color"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                            placeholder="$2999"
                                         />
                                     </div>
 
@@ -93,22 +92,23 @@ export default function UpdateProductAction() {
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                                         >
                                             <option>Select category</option>
-                                            <option value="TV">TV/Monitors</option>
-                                            <option value="PC">PC</option>
-                                            <option value="GA">Gaming/Console</option>
-                                            <option value="PH">Phones</option>
+                                            <option value="TV">Laptop</option>
+                                            <option value="PC">Accessories</option>
+                                            <option value="GA">Tablet</option>
+                                            <option value="PH">PC Desktop</option>
                                         </select>
                                     </div>
 
                                     <div className="col-span-2">
-                                        <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Product Description
+                                        <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                         </label>
-                                        <textarea
-                                            id="description"
-                                            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                            placeholder="Write product description here"
-                                        ></textarea>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            id="price"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                            placeholder="$2999"
+                                        />
                                     </div>
                                 </div>
 
@@ -133,3 +133,193 @@ export default function UpdateProductAction() {
         </div>
     )
 }
+
+
+// "use client";
+// import { useEffect, useRef, useState } from "react";
+// import { toast } from "react-toastify";
+
+// interface Product {
+//   id: number;
+//   name: string;
+//   color: string;
+//   Category: string;
+//   Price: string;
+// }
+
+// interface UpdateProductActionProps {
+//   product: Product;
+//   onUpdate: (updatedProduct: Product) => void;
+// }
+
+// export default function UpdateProductAction({ product, onUpdate }: UpdateProductActionProps) {
+//   const [menuOpen, setMenuOpen] = useState(false);
+//   const menuRef = useRef<HTMLDivElement>(null);
+
+//   const [formData, setFormData] = useState({
+//     name: product.name,
+//     color: product.color,
+//     category: product.Category,
+//     price: product.Price,
+//   });
+
+//   // Close modal if clicked outside
+//   useEffect(() => {
+//     function handleClickOutside(event: MouseEvent) {
+//       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+//         setMenuOpen(false);
+//       }
+//     }
+
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, []);
+
+//   // Handle form input changes
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({
+//       ...prev,
+//       [name]: value,
+//     }));
+//   };
+
+//   // Submit the form
+//   const handleSubmit = (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     onUpdate({
+//       ...product,
+//       name: formData.name,
+//       color: formData.color,
+//       Category: formData.category,
+//       Price: formData.price,
+//     });
+
+//     toast.success("Product updated successfully!");
+//     setMenuOpen(false);
+//   };
+
+//   return (
+//     <div ref={menuRef}>
+//       {/* Toggle Button */}
+//       <button
+//         className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+//         onClick={() => setMenuOpen((prev) => !prev)}
+//       >
+//         Edit
+//       </button>
+
+//       {/* Modal */}
+//       {menuOpen && (
+//         <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-screen bg-opacity-20 inset-0 backdrop-blur-sm bg-white/0">
+//           <div className="relative p-4 w-full max-w-md">
+//             <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+//               {/* Modal header */}
+//               <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
+//                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Update Product</h3>
+//                 <button
+//                   type="button"
+//                   onClick={() => setMenuOpen(false)}
+//                   className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center"
+//                 >
+//                   <svg className="w-3 h-3" fill="none" viewBox="0 0 14 14">
+//                     <path
+//                       stroke="currentColor"
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       strokeWidth="2"
+//                       d="M1 1l6 6m0 0l6 6M7 7l6-6M7 7L1 13"
+//                     />
+//                   </svg>
+//                 </button>
+//               </div>
+
+//               {/* Modal body */}
+//               <form onSubmit={handleSubmit} className="p-4 md:p-5">
+//                 <div className="grid gap-4 mb-4 grid-cols-2">
+//                   <div className="col-span-2">
+//                     <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+//                       Product Name
+//                     </label>
+//                     <input
+//                       type="text"
+//                       name="name"
+//                       id="name"
+//                       value={formData.name}
+//                       onChange={handleChange}
+//                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+//                       placeholder="Type product name"
+//                     />
+//                   </div>
+
+//                   <div className="col-span-2 sm:col-span-1">
+//                     <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+//                       Color
+//                     </label>
+//                     <input
+//                       type="color"
+//                       name="color"
+//                       id="color"
+//                       value={formData.color}
+//                       onChange={handleChange}
+//                       className="w-full h-10 p-1 rounded"
+//                     />
+//                   </div>
+
+//                   <div className="col-span-2 sm:col-span-1">
+//                     <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+//                       Category
+//                     </label>
+//                     <select
+//                       id="category"
+//                       name="category"
+//                       value={formData.category}
+//                       onChange={handleChange}
+//                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+//                     >
+//                       <option value="">Select category</option>
+//                       <option value="TV">Laptop</option>
+//                       <option value="PC">Accessories</option>
+//                       <option value="GA">Tablet</option>
+//                       <option value="PH">PC Desktop</option>
+//                     </select>
+//                   </div>
+
+//                   <div className="col-span-2">
+//                     <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+//                       Price
+//                     </label>
+//                     <input
+//                       type="number"
+//                       name="price"
+//                       id="price"
+//                       value={formData.price}
+//                       onChange={handleChange}
+//                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+//                       placeholder="$2999"
+//                     />
+//                   </div>
+//                 </div>
+
+//                 <button
+//                   type="submit"
+//                   className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5"
+//                 >
+//                   <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+//                     <path
+//                       d="M10 5a1 1 0 011 1v3h3a1 1 0 010 2h-3v3a1 1 0 01-2 0v-3H6a1 1 0 010-2h3V6a1 1 0 011-1z"
+//                       clipRule="evenodd"
+//                       fillRule="evenodd"
+//                     />
+//                   </svg>
+//                   Update product
+//                 </button>
+//               </form>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }

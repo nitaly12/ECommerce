@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-
+import { useRouter } from 'next/navigation';
 const products = [
   {
     id: 1,
@@ -40,7 +40,7 @@ const products = [
     image: '/assets/mega-menu-category-01.jpg',
     category: 'Accessories',
   },
-{
+  {
     id: 6,
     title: 'Wireless Headphones',
     price: 99.99,
@@ -60,6 +60,7 @@ const products = [
 const categories = ['All', 'Electronics', 'Fashion', 'Accessories'];
 
 export default function MarketplacePage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
 
@@ -74,14 +75,25 @@ export default function MarketplacePage() {
     <div className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
       <header className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <h1 className="text-4xl font-bold text-gray-900">Marketplace</h1>
-        <input
-          type="search"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-64 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+        <div className=' flex justify-between items-center'>
+          <div className=" absolute top-0 left-0 p-6 ">
+            <button
+              onClick={() => router.back()}
+              className=" dark:bg-gray-800 px-2 text-center rounded-full shadow-md  text-centerflex  items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium "
+            >
+              <span className="text-lg mr-1">‹</span> Back
+            </button>
+          </div>
+          <div>
+            <input
+              type="search"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-64 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
       </header>
 
       <div className="flex flex-col sm:flex-row gap-8">
@@ -95,7 +107,7 @@ export default function MarketplacePage() {
                 onClick={() => setCategory(cat)}
                 className={`cursor-pointer p-2 rounded hover:bg-indigo-100 ${
                   category === cat ? 'bg-indigo-200 font-semibold' : ''
-                }`}
+                  }`}
               >
                 {cat}
               </li>

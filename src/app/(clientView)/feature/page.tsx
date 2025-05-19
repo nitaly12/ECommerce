@@ -42,7 +42,7 @@ export default function CreativeFeaturePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f4ff] to-white py-20 px-6">
       {/* Back Button */}
-      <div className="mb-6 ">
+      <div className=" absolute top-0 left-0 p-6 ">
         <button
           onClick={() => router.back()}
           className=" dark:bg-gray-800 px-2 text-center rounded-full shadow-md  text-centerflex  items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium "

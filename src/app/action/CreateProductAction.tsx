@@ -24,9 +24,9 @@ export default function CreateProductAction() {
 
             {/* Modal */}
             {menuOpen && (
-                <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-screen bg-black bg-opacity-20">
+                <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-screen bg-opacity-20 inset-0 backdrop-blur-sm bg-white/0 ">
                     <div className="relative p-4 w-full max-w-md">
-                        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <div className="relative bg-white rounded-lg shadow-2xl dark:bg-gray-700">
                             {/* Modal header */}
                             <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 ">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -60,7 +60,7 @@ export default function CreateProductAction() {
                                 <div className="grid gap-4 mb-4 grid-cols-2">
                                     <div className="col-span-2">
                                         <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Name
+                                            Product Name
                                         </label>
                                         <input
                                             type="text"
@@ -72,15 +72,14 @@ export default function CreateProductAction() {
                                     </div>
 
                                     <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Price
+                                        <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Color
                                         </label>
                                         <input
-                                            type="number"
-                                            name="price"
-                                            id="price"
+                                            type="color"
+                                            name="color"
+                                            id="color"
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                            placeholder="$2999"
                                         />
                                     </div>
 
@@ -93,22 +92,23 @@ export default function CreateProductAction() {
                                             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                                         >
                                             <option>Select category</option>
-                                            <option value="TV">TV/Monitors</option>
-                                            <option value="PC">PC</option>
-                                            <option value="GA">Gaming/Console</option>
-                                            <option value="PH">Phones</option>
+                                            <option value="TV">Laptop</option>
+                                            <option value="PC">Accessories</option>
+                                            <option value="GA">Tablet</option>
+                                            <option value="PH">PC Desktop</option>
                                         </select>
                                     </div>
 
                                     <div className="col-span-2">
-                                        <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Product Description
+                                        <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                         </label>
-                                        <textarea
-                                            id="description"
-                                            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                            placeholder="Write product description here"
-                                        ></textarea>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            id="price"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                            placeholder="$2999"
+                                        />
                                     </div>
                                 </div>
 

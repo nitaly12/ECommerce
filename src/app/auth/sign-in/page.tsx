@@ -1,45 +1,100 @@
-export default function SignIn() {
+'use client';
+
+import { pseudoRandomBytes } from 'crypto';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+
+export default function LoginPage() {
+    const router = useRouter();
+    //from state 
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    //condition 
+    const handleSignIn = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) {
+            toast.error('please fill in all the fields.');
+            return;
+        }
+        else {
+            toast.success("Signed In successfully!");
+            setTimeout(() => {
+                router.push('/dashboard');
+            }, 1500);
+        }
+    }
     return (
-        <div className="p-36">
-            <form>
-                <div className="grid gap-6 mb-6 md:grid-cols-2">
-                    <div>
-                        <label htmlFor="first_name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
-                        <input type="text" id="first_name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" required />
-                    </div>
-                    <div>
-                        <label htmlFor="last_name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last name</label>
-                        <input type="text" id="last_name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Doe" required />
-                    </div>
-                    <div>
-                        <label htmlFor="company" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address</label>
-                        <input type="text" id="company" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Flowbite" required />
-                    </div>
-                    <div>
-                        <label htmlFor="phone" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone number</label>
-                        <input type="tel" id="phone" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="123-45-678" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" required />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-600">
+            <div className="text-sm absolute top-0 left-0 p-6 text-purple-700 flex items-center gap-2 cursor-pointer">
+                <button
+                    onClick={() => router.back()}
+                    className="text-center flex items-center text-sm text-white font-medium"
+                >
+                    <span className="text-lg mr-1">‹</span> Back
+                </button>
+            </div>
+            <div className="flex w-full max-w-6xl rounded-xl overflow-hidden shadow-xl bg-white/0 backdrop-blur-sm">
+                {/* Left Login Box */}
+                <div className="w-full md:w-1/2 bg-white p-10 rounded-tr-3xl rounded-br-3xl">
+                    <h2 className="text-3xl font-bold mb-2 text-gray-800">Login</h2>
+                    <p className="text-sm text-gray-600 mb-6">
+                        Welcome back! Please enter your information.
+                    </p>
+
+                    <form onSubmit={handleSignIn} className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Email</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                className="w-full mt-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Password</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter password"
+                                className="w-full mt-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                            <p className="text-sm text-right text-purple-500 mt-1 cursor-pointer hover:underline">
+                                Forgot password?
+                            </p>
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                        >
+                            Login
+                        </button>
+                        <p className="text-center text-sm text-gray-600">
+                            Don’t have an account?{' '}
+                            <Link href={'/auth/sign-out'} className="text-purple-600 font-semibold cursor-pointer hover:underline">Sign up</Link>
+                        </p>
+                    </form>
+                </div>
+
+                {/* Right Illustration */}
+                <div className="hidden md:flex w-1/2 items-center justify-center bg-gradient-to-bl from-indigo-500 to-purple-700">
+                    <div className="relative w-[300px] h-[300px]">
+                        <Image
+                            src="/assets/Tablet login-amico 2.svg" // Replace with your image
+                            alt="Dashboard preview"
+                            fill
+                            className="object-contain p-10"
+                            priority
+                        />
                     </div>
                 </div>
-                <div className="mb-6">
-                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email address</label>
-                    <input type="email" id="email" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="john.doe@company.com" required />
-                </div>
-                <div className="mb-6">
-                    <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                    <input type="password" id="password" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="•••••••••" required />
-                </div>
-                <div className="mb-6">
-                    <label htmlFor="confirm_password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm password</label>
-                    <input type="password" id="confirm_password" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="•••••••••" required />
-                </div>
-                <div className="flex items-start mb-6">
-                    <div className="flex items-center h-5">
-                        <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800" required />
-                    </div>
-                    <label htmlFor="remember" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">I agree with the <a href="#" className="text-blue-600 hover:underline dark:text-blue-500">terms and conditions</a>.</label>
-                </div>
-                <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</button>
-            </form>
+            </div>
+            <ToastContainer position='top-center' autoClose={1000} />
         </div>
-    )
+    );
 }

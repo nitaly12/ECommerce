@@ -14,7 +14,7 @@ const navigation = [
     { name: 'Company', href: '#' },
 ]
 
-export default function NavbarComponent() {
+export default function LandingPage() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [openMenu, setOpenMenu] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);

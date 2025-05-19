@@ -61,8 +61,9 @@
 // }
 // ProductDetailPage.tsx
 'use client'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import DetailComponent from '../../_components/DetailComponent';
+import router from 'next/router';
 
 const products = [
   {
@@ -110,6 +111,8 @@ const products = [
 ];
 
 export default function ProductDetailPage() {
+  const router = useRouter()
+
   const { id } = useParams();
   const product = products.find(p => p.id === Number(id));
 
@@ -118,6 +121,14 @@ export default function ProductDetailPage() {
   return (
     <div className="p-10">
       {/* Pass the correct single product to the DetailComponent */}
+      <div className="mb-6 pt-5">
+        <button
+          onClick={() => router.back()}
+          className=" dark:bg-gray-800 px-2 text-center rounded-full shadow-md  text-centerflex  items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium "
+        >
+          <span className="text-lg mr-1">‹</span> Back
+        </button>
+      </div>
       <DetailComponent product={product} />
     </div>
   );

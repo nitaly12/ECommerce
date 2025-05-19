@@ -106,7 +106,7 @@ export default function ProductListComponent() {
                         return (
                             <div
                                 key={product.id}
-                                className={`relative border rounded-lg p-4 shadow transition ${inBasket ? 'border-blue-500 ring-2 ring-blue-300' : ''
+                                className={`relative border-b-blue-200 rounded-lg p-4 shadow transition ${inBasket ? 'border-blue-500 ring-2 ring-blue-300' : ''
                                     }`}
                             >                                
                                 <Link href={`/dashboard/product-detail/${product.id}`}>
