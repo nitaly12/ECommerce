@@ -141,7 +141,7 @@ export default function DashboardPage() {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+        </div>
         </section>
             <StockPage/>
       </main>

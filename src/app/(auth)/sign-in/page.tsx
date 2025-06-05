@@ -64,9 +64,9 @@ export default function LoginPage() {
                                 placeholder="Enter password"
                                 className="w-full mt-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
-                            <p className="text-sm text-right text-purple-500 mt-1 cursor-pointer hover:underline">
+                            <Link href="/forgot-password" className="text-sm text-left text-purple-500 mt-1 cursor-pointer hover:underline">
                                 Forgot password?
-                            </p>
+                            </Link>
                         </div>
                         <button
                             type="submit"
@@ -76,7 +76,7 @@ export default function LoginPage() {
                         </button>
                         <p className="text-center text-sm text-gray-600">
                             Don’t have an account?{' '}
-                            <Link href={'/auth/sign-out'} className="text-purple-600 font-semibold cursor-pointer hover:underline">Sign up</Link>
+                            <Link href={'/sign-out'} className="text-purple-600 font-semibold cursor-pointer hover:underline">Sign up</Link>
                         </p>
                     </form>
                 </div>

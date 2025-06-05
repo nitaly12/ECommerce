@@ -87,7 +87,7 @@ export default function SignOutPage() {
                         <p className="text-center text-sm text-gray-600">
                             Already have an account?{' '}
                             <Link
-                                href="/auth/sign-in"
+                                href="/sign-in"
                                 className="text-purple-600 font-semibold cursor-pointer hover:underline"
                             >
                                 Login

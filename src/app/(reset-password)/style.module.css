@@ -1,0 +1,23 @@
+.inputStyle {
+  width: 50px;
+  height: 50px;
+  margin: 0 6px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #4c1d95; /* purple */
+  text-align: center;
+  border: 2px solid #c4b5fd; /* light purple */
+  border-radius: 12px;
+  background-color: #f5f3ff; /* very light purple bg */
+  outline: none;
+  caret-color: transparent; /* Hide blinking cursor */
+  box-shadow: none;
+  user-select: none;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.inputStyle:focus {
+  border-color: #7c3aed; /* purple */
+  background-color: #ede9fe;
+  box-shadow: 0 0 8px #7c3aed88;
+}

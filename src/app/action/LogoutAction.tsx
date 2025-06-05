@@ -30,7 +30,7 @@ export default function LogoutAction() {
 
     // Wait for toast to show before redirecting
     setTimeout(() => {
-      router.push('/auth/sign-in');
+      router.push('/sign-in');
     }, 1500); // Match with toast duration
   };
 

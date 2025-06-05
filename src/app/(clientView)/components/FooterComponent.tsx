@@ -497,9 +497,9 @@ export default function FooterComponent() {
 
                             <div className="ml-auto flex items-center">
                                 <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:space-x-6">
-                                    <Link href="/auth/sign-in" className="text-sm font-medium text-gray-700 hover:text-gray-800">Sign In</Link>
+                                    <Link href="/sign-in" className="text-sm font-medium text-gray-700 hover:text-gray-800">Sign In</Link>
                                     <span className="h-6 w-px bg-gray-200" aria-hidden="true"></span>
-                                    <Link href="/auth/sign-out" className="text-sm font-medium text-gray-700 hover:text-gray-800">Create account</Link>
+                                    <Link href="/sign-out" className="text-sm font-medium text-gray-700 hover:text-gray-800">Create account</Link>
                                 </div>
 
                                 <div className="hidden lg:ml-8 lg:flex">
