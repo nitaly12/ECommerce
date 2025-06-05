@@ -5,18 +5,18 @@ import Profile from "./profile/page";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full">
-      <NavbarComponent />
+      {/* <NavbarComponent />
 
       <div className="flex">
         {/* Sidebar with fixed width */}
-        <div className="w-64">
+        {/* <div className="w-64">
           <SideBarComponent />
-        </div>
+        </div>  */}
 
-        <main className="flex-1 p-6 ">
+        <main className="flex-1">
           {children}
         </main>
-      </div>
+      {/* </div> */}
     </div>
   );
 }
