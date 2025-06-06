@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { FaWallet, FaExchangeAlt, FaCreditCard, FaCog, FaSignOutAlt, FaChartPie, FaUserCircle, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import Link from 'next/link';
 
 const summary = [
   { label: 'Total Balance', value: '$58,154.07', change: '+2.5%' },
@@ -49,38 +50,7 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen bg-[#18181b] text-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#131316] flex flex-col justify-between py-6 px-4 min-h-screen">
-        <div>
-          <div className="flex items-center gap-3 mb-8">
-            <span className="text-2xl font-bold tracking-tight">Equata</span>
-          </div>
-          <div className="flex items-center gap-3 mb-8">
-            <FaUserCircle className="text-3xl" />
-            <div>
-              <div className="font-semibold">Emily Miller</div>
-              <div className="text-xs text-gray-400">@emilymiller</div>
-            </div>
-          </div>
-          <nav className="flex flex-col gap-2">
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#23232a] font-semibold" href="#"><FaWallet /> Dashboard</a>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaCreditCard /> My Wallet</a>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaExchangeAlt /> Transfer</a>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaChartPie /> Transactions</a>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaCreditCard /> Payments</a>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaExchangeAlt /> Exchange</a>
-          </nav>
-          <div className="mt-8">
-            <div className="text-xs text-gray-400 mb-2">OTHERS</div>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaCog /> Settings</a>
-            <a className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#23232a]" href="#"><FaSignOutAlt /> Support</a>
-          </div>
-        </div>
-        <div className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-xl p-4 flex flex-col items-center mt-8">
-          <div className="font-bold text-white mb-2">Upgrade</div>
-          <div className="text-xs text-white mb-2">Unlock all features</div>
-          <button className="bg-white text-orange-500 font-bold px-4 py-1 rounded">Upgrade</button>
-        </div>
-      </aside>
+     
       {/* Main Content */}
       <main className="flex-1 p-8">
         <header className="flex justify-between items-center mb-8">
