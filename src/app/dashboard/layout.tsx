@@ -25,6 +25,7 @@
 import { AdminApprovalCard } from '@/components/AdminCard';
 import { useState } from 'react';
 import DeviceManagement from './DeviceManagement';
+import AttendanceManagement from './AttendanceManagement';
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,9 @@ export default function AdminPage() {
     //   onApprove={handleApprove}
     //   loading={loading}
     // />
-    <DeviceManagement />
+    // <DeviceManagement />
+    <div>
+      <AttendanceManagement/>
+    </div>
   );
 }
