@@ -45,70 +45,73 @@ interface AttendanceListResponseDto {
 
 const API_BASE = "https://wehr.kosign.dev/api/new/manager/admin/attendances";
 
-// Mock data for testing
-const mockLedgerData: AttendanceLedgerDto = {
-  content: [
-    {
-      employeeId: 1001,
-      employeeName: "User 1",
-      email: "user.email",
-      departmentName: "Department 1",
-      totalLate: 29,
-      totalLateHours: 0.05,
-      totalMissingScan: 5,
-      workHours: "08:00-05:00",
-      remarks: ""
-    },
-    {
-      employeeId: 1002,
-      employeeName: "User 2",
-      email: "user.email",
-      departmentName: "Department 2",
-      totalLate: 29,
-      totalLateHours: 0.05,
-      totalMissingScan: 5,
-      workHours: "08:00-05:00",
-      remarks: ""
-    },
-    {
-      employeeId: 1003,
-      employeeName: "User 3",
-      email: "user.email",
-      departmentName: "Department 3",
-      totalLate: 29,
-      totalLateHours: 0.05,
-      totalMissingScan: 5,
-      workHours: "08:00-05:00",
-      remarks: ""
-    },
-    {
-      employeeId: 1004,
-      employeeName: "User 4",
-      email: "user.email",
-      departmentName: "Department 4",
-      totalLate: 29,
-      totalLateHours: 0.05,
-      totalMissingScan: 5,
-      workHours: "08:00-05:00",
-      remarks: ""
-    },
-    {
-      employeeId: 1005,
-      employeeName: "User 5",
-      email: "user.email",
-      departmentName: "Department 5",
-      totalLate: 29,
-      totalLateHours: 0.05,
-      totalMissingScan: 5,
-      workHours: "08:00-05:00",
-      remarks: ""
-    }
-  ],
-  totalPages: 1,
-  totalElements: 5,
-  number: 0,
-  size: 25
-};
+// Helper to generate a random name
+function getRandomName(idx: number) {
+  const firstNames = ["John", "Emily", "Michael", "Sophia", "David", "Olivia", "William", "Ava", "James", "Mia", "Benjamin", "Charlotte", "Elijah", "Amelia", "Logan", "Harper", "Alexander", "Evelyn", "Daniel", "Grace", "Henry", "Ella", "Jack", "Scarlett", "Sebastian", "Victoria", "Matthew", "Penelope", "Lucas", "Chloe"];
+  const lastNames = ["Smith", "Johnson", "Lee", "Martinez", "Kim", "Brown", "Davis", "Wilson", "Anderson", "Thomas", "Moore", "Taylor", "Harris", "Clark", "Lewis", "Walker", "Hall", "Young", "King", "Wright", "Lopez", "Hill", "Scott", "Green", "Adams", "Nelson", "Carter", "Mitchell", "Perez", "Roberts"];
+  return `${firstNames[idx % firstNames.length]} ${lastNames[idx % lastNames.length]}`;
+}
+
+function getRandomDepartment(idx: number) {
+  const departments = ["Engineering", "Human Resources", "Sales", "Marketing", "Finance", "Support", "IT", "Admin", "Logistics", "Legal"];
+  return departments[idx % departments.length];
+}
+
+function getRandomEmail(name: string, idx: number) {
+  return name.toLowerCase().replace(/ /g, ".") + idx + "@company.com";
+}
+
+function getRandomRemarks(idx: number) {
+  const remarks = ["", "On project site", "Client meeting", "Business trip", "Late due to traffic", "Training", "Remote work", "Family emergency", ""];
+  return remarks[idx % remarks.length];
+}
+
+function getRandomWorkHours(idx: number) {
+  const hours = ["09:00-18:00", "08:30-17:30", "10:00-19:00", "08:00-17:00"];
+  return hours[idx % hours.length];
+}
+
+// Helper to get all dates in range
+function getDatesInRange(start: string, end: string) {
+  const dates = [];
+  let current = new Date(start);
+  const endDate = new Date(end);
+  while (current <= endDate) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return dates;
+}
+
+// Generate mock ledger summary data for the current page and range
+function generateMockLedgerSummaryData({ page, size, startDate, endDate }: { page: number, size: number, startDate: string, endDate: string }) {
+  const totalUsers = 180;
+  const totalPages = Math.ceil(totalUsers / size);
+  const startIdx = page * size;
+  const endIdx = Math.min(startIdx + size, totalUsers);
+  const content = [];
+  for (let i = startIdx; i < endIdx; i++) {
+    const name = getRandomName(i);
+    content.push({
+      employeeId: 1000 + i,
+      employeeName: name,
+      email: getRandomEmail(name, i),
+      departmentName: getRandomDepartment(i),
+      totalLate: Math.floor(Math.random() * 10),
+      totalLateHours: parseFloat((Math.random() * 5).toFixed(2)),
+      totalMissingScan: Math.floor(Math.random() * 5),
+      workHours: getRandomWorkHours(i),
+      remarks: getRandomRemarks(i)
+    });
+  }
+  return {
+    content,
+    totalPages,
+    totalElements: totalUsers,
+    number: page,
+    size
+  };
+}
 
 const mockUserAttendanceData: AttendanceListResponseDto = {
   content: [
@@ -155,15 +158,22 @@ const mockUserAttendanceData: AttendanceListResponseDto = {
 
 export default function AttendanceManagement() {
   const router = useRouter();
+  // Set default date range to today
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const currentDate = `${yyyy}-${mm}-${dd}`;
+
   const [dateRange, setDateRange] = useState({
-    startDate: "2025-01-21",
-    endDate: "2025-01-28",
+    startDate: currentDate,
+    endDate: currentDate,
   });
 
   // Ledger state
   const [ledgerData, setLedgerData] = useState<AttendanceLedgerDto | null>(null);
   const [ledgerPage, setLedgerPage] = useState(0);
-  const ledgerSize = 25;
+  const [ledgerSize, setLedgerSize] = useState(10); // Make ledgerSize stateful
   const [loadingLedger, setLoadingLedger] = useState(false);
 
   // User attendance details state
@@ -185,11 +195,16 @@ export default function AttendanceManagement() {
       setLoadingLedger(true);
       try {
         if (useMockData) {
-          // Use mock data
           setTimeout(() => {
-            setLedgerData(mockLedgerData);
+            const mockData = generateMockLedgerSummaryData({
+              page: ledgerPage,
+              size: ledgerSize,
+              startDate: dateRange.startDate,
+              endDate: dateRange.endDate
+            });
+            setLedgerData(mockData);
             setLoadingLedger(false);
-          }, 500);
+          }, 300);
           return;
         }
 
@@ -197,7 +212,7 @@ export default function AttendanceManagement() {
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
           page: ledgerPage.toString(),
-          size: ledgerSize.toString(),
+          size: ledgerSize.toString(), // Use stateful ledgerSize
           sortDirection: "DESC",
           lateThreshold: "IMMEDIATE",
         });
@@ -216,7 +231,7 @@ export default function AttendanceManagement() {
       }
     }
     fetchLedger();
-  }, [dateRange, ledgerPage, useMockData]);
+  }, [dateRange, ledgerPage, ledgerSize, useMockData]); // Add ledgerSize
 
   // Fetch User Attendance Details
   // useEffect(() => {
@@ -276,6 +291,77 @@ export default function AttendanceManagement() {
     const end = new Date(dateRange.endDate);
     return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   };
+
+  // CSV Download (all records for selected date range)
+  async function downloadCSV() {
+    // Generate all mock ledger summary data for the selected range (all users)
+    if (useMockData) {
+      const mockData = generateMockLedgerSummaryData({
+        page: 0,
+        size: 10000, // large enough to get all users
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate
+      });
+      const allInRange = mockData.content;
+      if (!allInRange.length) return;
+      const header = [
+        'Employee Name',
+        'Email',
+        'Department',
+        'Work Hours',
+        'Total Late',
+        'Total Late Hours',
+        'Total Missing Scan',
+        'Remarks'
+      ];
+      const rows = allInRange.map(emp => [
+        emp.employeeName,
+        emp.email || '',
+        emp.departmentName || '',
+        emp.workHours || '',
+        emp.totalLate,
+        emp.totalLateHours,
+        emp.totalMissingScan,
+        emp.remarks || ''
+      ]);
+      const csvContent = [header, ...rows]
+        .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+        .join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_ledger_${dateRange.startDate}_to_${dateRange.endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    // Real API download logic (wrapped in async IIFE)
+    (async () => {
+      const params = new URLSearchParams({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        page: "0",
+        size: "10000", // Large size to get all records for CSV
+        sortDirection: "DESC",
+        lateThreshold: "IMMEDIATE",
+      });
+      const url = `${API_BASE}/ledger/csv?${params.toString()}`;
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const urlBlob = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = urlBlob;
+      a.download = `attendance_ledger_${dateRange.startDate}_to_${dateRange.endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(urlBlob);
+    })();
+  }
 
   return (
     <div style={{ padding: "24px", backgroundColor: "#f8fafc", minHeight: "100vh" }}>
@@ -393,24 +479,34 @@ export default function AttendanceManagement() {
         </div>
 
         {/* Date Range Selector */}
-        <div style={{ 
-          display: "flex", 
-          alignItems: "center",
-          gap: "8px",
-          padding: "12px 16px",
-          border: "1px solid #d1d5db",
-          borderRadius: "8px",
-          backgroundColor: "white",
-          cursor: "pointer"
-        }}>
-          <span style={{ color: "#6b7280" }}>📅</span>
-          <span style={{ fontSize: "14px", color: "#374151" }}>
-            {formatDateRange()}
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <input
+            type="date"
+            value={dateRange.startDate}
+            onChange={e => setDateRange(dr => ({ ...dr, startDate: e.target.value }))}
+            style={{
+              padding: "8px 12px",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+              fontSize: "14px"
+            }}
+          />
+          <span style={{ color: "#6b7280" }}>to</span>
+          <input
+            type="date"
+            value={dateRange.endDate}
+            onChange={e => setDateRange(dr => ({ ...dr, endDate: e.target.value }))}
+            style={{
+              padding: "8px 12px",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+              fontSize: "14px"
+            }}
+          />
         </div>
 
         {/* Download Button */}
-        <button style={{
+        <button onClick={downloadCSV} style={{
           display: "flex",
           alignItems: "center",
           gap: "8px",
@@ -461,18 +557,13 @@ export default function AttendanceManagement() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map((emp) => (
+                {filteredData.map(emp => (
                   <tr
                     key={emp.employeeId}
-                    style={{ 
-                      cursor: "pointer",
-                      borderBottom: "1px solid #f3f4f6",
-                      transition: "background-color 0.2s"
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f9fafb"}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    style={{ cursor: "pointer" }}
                     onClick={() => {
                       router.push(`/dashboard/attendance/${emp.employeeId}`);
+                      console.log("clicked",emp.employeeId);
                     }}
                   >
                     <td style={{ padding: "16px" }}>
@@ -541,24 +632,23 @@ export default function AttendanceManagement() {
             >
               ←
             </button>
-            
-            {[1, 2, 3].map((page) => (
+            {/* Dynamic page numbers */}
+            {Array.from({ length: ledgerData?.totalPages || 1 }, (_, i) => i).map((page) => (
               <button
                 key={page}
-                onClick={() => setLedgerPage(page - 1)}
+                onClick={() => setLedgerPage(page)}
                 style={{
                   padding: "8px 12px",
                   border: "1px solid #d1d5db",
-                  backgroundColor: ledgerPage === page - 1 ? "#3b82f6" : "white",
-                  color: ledgerPage === page - 1 ? "white" : "#374151",
+                  backgroundColor: ledgerPage === page ? "#3b82f6" : "white",
+                  color: ledgerPage === page ? "white" : "#374151",
                   borderRadius: "6px",
                   cursor: "pointer"
                 }}
               >
-                {page}
+                {page + 1}
               </button>
             ))}
-            
             <button
               disabled={ledgerPage + 1 >= (ledgerData?.totalPages || 1)}
               onClick={() => setLedgerPage((p) => p + 1)}
@@ -573,11 +663,10 @@ export default function AttendanceManagement() {
             >
               →
             </button>
-            
             <span style={{ fontSize: "14px", color: "#6b7280" }}>Items per page</span>
             <select 
               value={ledgerSize}
-              onChange={(e) => console.log("Page size changed:", e.target.value)}
+              onChange={(e) => { setLedgerSize(Number(e.target.value)); setLedgerPage(0); }}
               style={{
                 padding: "4px 8px",
                 border: "1px solid #d1d5db",
@@ -585,6 +674,7 @@ export default function AttendanceManagement() {
                 fontSize: "14px"
               }}
             >
+              <option value={10}>10</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
