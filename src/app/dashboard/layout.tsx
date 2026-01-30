@@ -9,11 +9,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="flex">
         {/* Sidebar with fixed width */}
-        <div className="w-64">
+        <div className="hidden sm:block w-64">
           <SideBarComponent />
         </div>
 
-        <main className="flex-1 p-6 ">
+        <main className="flex-1 p-2 sm:p-6">
           {children}
         </main>
       </div>

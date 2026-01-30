@@ -25,9 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
       >
-        {children}
+        <header className="w-full bg-white shadow-sm py-4 px-8 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            E-Commerce Dashboard
+          </h1>
+        </header>
+        <main className="container mx-auto px-4 py-6 bg-white rounded-lg shadow">
+          {children}
+        </main>
         <div id="modal-root"></div>
       </body>
     </html>
