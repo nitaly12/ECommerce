@@ -1,4 +1,4 @@
-// 'use client'
+'use client'
 // import { useParams } from 'next/navigation'
 // import DetailComponent from '../../_components/DetailComponent';
 
@@ -129,7 +129,11 @@ export default function ProductDetailPage() {
           <span className="text-lg mr-1">‹</span> Back
         </button>
       </div>
-      <DetailComponent product={product} />
+      <DetailComponent
+        product={{...product, price: Number(product?.Price?.replace('$', ''))}}
+        isOpen={true}
+        onClose={() => router.back()}
+      />
     </div>
   );
 }

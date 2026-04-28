@@ -1,135 +1,265 @@
+'use client';
 import { useEffect, useRef, useState } from "react";
+import { api } from "@/lib/api";
+import { toast } from "react-toastify";
+import {
+    XMarkIcon,
+    PlusIcon,
+    TagIcon,
+    SwatchIcon,
+    FolderIcon,
+    CurrencyDollarIcon,
+} from "@heroicons/react/24/outline";
 
-export default function CreateProductAction() {
+interface CreateProductActionProps {
+    onProductCreated?: () => void;
+}
+
+export default function CreateProductAction({ onProductCreated }: CreateProductActionProps) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
+    const [formData, setFormData] = useState({
+        name: "",
+        color: "#3b82f6",
+        category: "",
+        price: "",
+    });
+
     useEffect(() => {
-        function handleClickOutside(event: { target: any; }) {
+        function handleClickOutside(event: { target: any }) {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setMenuOpen(false); // Step 3: close if click outside
+                setMenuOpen(false);
             }
         }
-
         document.addEventListener("mousedown", handleClickOutside);
-
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+    
+        if (!formData.name || !formData.category || !formData.price) {
+            toast.error("Please fill in all required fields.");
+            return;
+        }
+    
+        setLoading(true);
+    
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:8080/api/stock-items", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    color: formData.color,
+                    category: formData.category,
+                    price: Number(formData.price),
+                }),
+            });
+    
+            if (!res.ok) {
+                throw new Error("API error");
+            }
+    
+            toast.success("Product created successfully!");
+            setFormData({ name: "", color: "#3b82f6", category: "", price: "" });
+            setMenuOpen(false);
+            onProductCreated?.();
+    
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to create product.");
+        }
+    
+        setLoading(false);
+    };
+
     return (
         <div ref={menuRef}>
             {/* Toggle Button */}
-            <button onClick={() => setMenuOpen(prev => !prev)} className="block text-white bg-blue-700 focus:outline-none  rounded-lg text-sm px-5 py-2 text-center" type="button"> + New Product </button>
+            <button
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:-translate-y-0.5"
+                type="button"
+            >
+                <PlusIcon className="w-5 h-5" />
+                New Product
+            </button>
 
             {/* Modal */}
             {menuOpen && (
-                <div className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center w-full h-screen bg-opacity-20 inset-0 backdrop-blur-sm bg-white/0 ">
-                    <div className="relative p-4 w-full max-w-md">
-                        <div className="relative bg-white rounded-lg shadow-2xl dark:bg-gray-700">
-                            {/* Modal header */}
-                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200 ">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Create New Product
-                                </h3>
+                <div className="fixed inset-0 z-50 flex justify-center items-center backdrop-blur-sm bg-black/20">
+                    <div className="relative p-4 w-full max-w-lg">
+                        <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">
+                                        Create New Product
+                                    </h3>
+                                    <p className="text-sm text-gray-500 mt-0.5">
+                                        Add a new item to your stock inventory
+                                    </p>
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => setMenuOpen(false)}
-                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                 >
-                                    <svg
-                                        className="w-3 h-3"
-                                        fill="none"
-                                        viewBox="0 0 14 14"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            stroke="currentColor"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M1 1l6 6m0 0l6 6M7 7l6-6M7 7L1 13"
-                                        />
-                                    </svg>
-                                    <span className="sr-only">Close modal</span>
+                                    <XMarkIcon className="w-5 h-5" />
                                 </button>
                             </div>
 
-                            {/* Modal body */}
-                            <form className="p-4 md:p-5">
-                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                    <div className="col-span-2">
-                                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Product Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            id="name"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                            placeholder="Type product name"
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="color" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Color
-                                        </label>
-                                        <input
-                                            type="color"
-                                            name="color"
-                                            id="color"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                            Category
-                                        </label>
-                                        <select
-                                            id="category"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                            {/* Modal Body */}
+                            <form className="p-6" onSubmit={handleSubmit}>
+                                <div className="space-y-5">
+                                    {/* Product Name */}
+                                    <div>
+                                        <label
+                                            htmlFor="name"
+                                            className="block mb-2 text-sm font-medium text-gray-700"
                                         >
-                                            <option>Select category</option>
-                                            <option value="TV">Laptop</option>
-                                            <option value="PC">Accessories</option>
-                                            <option value="GA">Tablet</option>
-                                            <option value="PH">PC Desktop</option>
-                                        </select>
+                                            Product Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                <TagIcon className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                id="name"
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                className="block w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                placeholder="e.g. Apple MacBook Pro"
+                                            />
+                                        </div>
                                     </div>
 
-                                    <div className="col-span-2">
-                                        <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    {/* Color & Category Row */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label
+                                                htmlFor="color"
+                                                className="block mb-2 text-sm font-medium text-gray-700"
+                                            >
+                                                Color
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                    <SwatchIcon className="w-4 h-4 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    name="color"
+                                                    id="color"
+                                                    value={formData.color}
+                                                    onChange={handleChange}
+                                                    className="block w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                    placeholder="e.g. Silver"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                htmlFor="category"
+                                                className="block mb-2 text-sm font-medium text-gray-700"
+                                            >
+                                                Category <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                    <FolderIcon className="w-4 h-4 text-gray-400" />
+                                                </div>
+                                                <select
+                                                    id="category"
+                                                    name="category"
+                                                    value={formData.category}
+                                                    onChange={handleChange}
+                                                    className="block w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                                                >
+                                                    <option value="">Select</option>
+                                                    <option value="Laptop">Laptop</option>
+                                                    <option value="Accessories">Accessories</option>
+                                                    <option value="Tablet">Tablet</option>
+                                                    <option value="PC Desktop">PC Desktop</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Price */}
+                                    <div>
+                                        <label
+                                            htmlFor="price"
+                                            className="block mb-2 text-sm font-medium text-gray-700"
+                                        >
+                                            Price <span className="text-red-500">*</span>
                                         </label>
-                                        <input
-                                            type="number"
-                                            name="price"
-                                            id="price"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                            placeholder="$2999"
-                                        />
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                <CurrencyDollarIcon className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="number"
+                                                name="price"
+                                                id="price"
+                                                value={formData.price}
+                                                onChange={handleChange}
+                                                className="block w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                placeholder="2999"
+                                                min="0"
+                                                step="0.01"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                >
-                                    <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            d="M10 5a1 1 0 011 1v3h3a1 1 0 010 2h-3v3a1 1 0 01-2 0v-3H6a1 1 0 010-2h3V6a1 1 0 011-1z"
-                                            clipRule="evenodd"
-                                            fillRule="evenodd"
-                                        />
-                                    </svg>
-                                    Add new product
-                                </button>
+                                {/* Actions */}
+                                <div className="flex items-center justify-end gap-3 mt-8 pt-5 border-t border-gray-100">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMenuOpen(false)}
+                                        className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? (
+                                            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                        ) : (
+                                            <PlusIcon className="w-4 h-4" />
+                                        )}
+                                        {loading ? "Creating..." : "Add Product"}
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
                 </div>
             )}
         </div>
-    )
+    );
 }

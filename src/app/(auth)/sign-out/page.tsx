@@ -14,19 +14,43 @@ export default function SignOutPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSignUp = (e: React.FormEvent) => {
-        e.preventDefault(); // Prevent form submission reload
-
-        if (!fullName || !email || !password) {
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+    
+        if (!fullName || !password) {
             toast.error('Please fill in all the fields.');
             return;
         }
-
-        toast.success('Signed up successfully!');
-
-        setTimeout(() => {
-            router.push('/auth/sign-in');
-        }, 1500);
+    
+        try {
+            const res = await fetch('http://localhost:8080/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: fullName,
+                    email: email,
+                    password: password,
+                }),
+            });
+    
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || 'Registration failed');
+            }
+    
+            const data = await res.json();
+    
+            toast.success('Signed up successfully!');
+    
+            setTimeout(() => {
+                router.push('/sign-in');
+            }, 1000);
+    
+        } catch (error: any) {
+            toast.error(error.message || 'Something went wrong');
+        }
     };
 
     return (
@@ -55,16 +79,6 @@ export default function SignOutPage() {
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 placeholder="Your full name"
-                                className="w-full mt-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Email</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
                                 className="w-full mt-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
                         </div>

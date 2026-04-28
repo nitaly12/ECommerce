@@ -1,9 +1,29 @@
 'use client'
 import Image from "next/image"
-import { userAgent } from "next/server";
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import DetailComponent from "./DetailComponent";
+import CreateProductModal from "./CreateProductModal";
+import { api } from "@/lib/api";
+import { toast } from "react-toastify";
+import {
+    Squares2X2Icon,
+    TableCellsIcon,
+    FunnelIcon,
+    MagnifyingGlassIcon,
+    PlusIcon
+} from "@heroicons/react/24/outline";
+
+interface Product {
+    id: number;
+    image: string;
+    name: string;
+    rating: number;
+    price: number;
+    status: string;
+}
+
 export default function ProductListComponent() {
     const [searchPro, setSearchPro] = useState("");
     const [sortPrice, setSortPrice] = useState("all");
@@ -11,21 +31,33 @@ export default function ProductListComponent() {
     const [sortRating, setSortRating] = useState("all");
     const [basket, setBasket] = useState<number[]>([])
     const router = useRouter()
-    const products = [
-        { id: 1, image: 'mega-menu-category-01.jpg', name: 'Apple Watch Series 7 GPS, Aluminium Case, Starlight Sport', rating: 4.5, Price: '$399', status: 'active' },
-        { id: 2, image: 'mega-menu-category-02.jpg', name: 'Smart Watch, Aluminium Case, Starlight Sport', rating: 2.5, Price: '$999', status: 'active' },
-        { id: 3, image: 'product-page-01-related-product-01.jpg', name: 'Apple Watch Series 7 GPS, Aluminium Case, Starlight Sport', rating: 3.0, Price: '$599', status: 'active' },
-        { id: 4, image: 'apple-watch.png', name: 'Apple Watch Series 7 GPS, Aluminium Case, Starlight Sport', rating: 5.0, Price: '$899', status: 'active' },
-        { id: 5, image: 'product-page-01-related-product-02.jpg', name: 'Apple Watch Series 7 GPS, Aluminium Case, Starlight Sport', rating: 4.0, Price: '$299', status: 'non-active' },
-        { id: 6, image: 'product-page-01-related-product-03.jpg', name: 'Apple Watch Series 7 GPS, Aluminium Case, Starlight Sport', rating: 5.0, Price: '$599', status: 'active' },
-    ]
-    const parsePrice = (price: string) => Number(price.replace("$", ""))
-    
+
+    // Modal State
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            const data = await api.get<Product[]>('/api/products');
+            setProducts(data || []);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
     // Add status filter and pagination state
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
-    
+
     const filterProduct = products
         .filter(product =>
             (statusFilter === 'all' || product.status === statusFilter) &&
@@ -36,7 +68,7 @@ export default function ProductListComponent() {
                 return sortName === "a-z" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
             }
             if (sortPrice !== "all") {
-                return sortPrice === "low-to-high" ? parsePrice(a.Price) - parsePrice(b.Price) : parsePrice(b.Price) - parsePrice(a.Price);
+                return sortPrice === "low-to-high" ? a.price - b.price : b.price - a.price;
             }
             if (sortRating !== "all") {
                 return sortRating === "low-to-high" ? a.rating - b.rating : b.rating - a.rating;
@@ -61,117 +93,154 @@ export default function ProductListComponent() {
         router.push(`/dashboard/basket?items=${query}`)
     }
     return (
-        <div className="pt-10 flex flex-col min-h-screen bg-[#f8f9fa] text-gray-900 px-6">
+        <div className="pt-10 pb-16 flex flex-col min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
             {/* Dashboard Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold mb-1">Management Product</h1>
-                    <p className="text-gray-500 text-sm">Add Product to your store</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2 font-display">Product Management</h1>
+                    <p className="text-gray-500">Manage and organize your store inventory</p>
                 </div>
-                <button className="bg-black text-white px-5 py-2 rounded-lg font-semibold hover:bg-gray-800 mt-4 md:mt-0">Add Product</button>
-            </div>
-            
-            {/* Filter Buttons */}
-            <div className="flex gap-2 mb-4">
-                <button 
-                    onClick={() => { setStatusFilter('all'); setCurrentPage(1); }} 
-                    className={`px-4 py-2 rounded ${statusFilter === 'all' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'}`}
+                <button
+                    onClick={() => setCreateModalOpen(true)}
+                    className="inline-flex items-center gap-2 bg-gray-900 text-white px-2 py-2 rounded-xl font-semibold hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/10 hover:shadow-xl hover:-translate-y-0.5 mt-4 md:mt-0"
                 >
-                    All
-                </button>
-                <button 
-                    onClick={() => { setStatusFilter('active'); setCurrentPage(1); }} 
-                    className={`px-4 py-2 rounded ${statusFilter === 'active' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                    Active
-                </button>
-                <button 
-                    onClick={() => { setStatusFilter('non-active'); setCurrentPage(1); }} 
-                    className={`px-4 py-2 rounded ${statusFilter === 'non-active' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'}`}
-                >
-                    Non Active
+                    <PlusIcon className="w-5 h-5" />
+                    <span>Add Product</span>
                 </button>
             </div>
-            
-            {/* Controls Row */}
-            <div className="mb-6 flex flex-col md:flex-row gap-4 md:items-center">
-                <div className="flex gap-2 w-full md:w-auto">
-                    <button className="px-3 py-2 border rounded bg-white text-gray-700 flex items-center gap-1">
-                        <span>Table</span>
-                    </button>
-                    <button className="px-3 py-2 border rounded bg-white text-gray-700 flex items-center gap-1">
-                        <span>Columns</span>
-                    </button>
-                    <button className="px-3 py-2 border rounded bg-white text-gray-700 flex items-center gap-1">
-                        <span>Filter</span>
-                    </button>
+
+            {/* Controls Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-8">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+                    {/* Filter Tabs */}
+                    <div className="flex p-1 bg-gray-50 rounded-xl">
+                        {['all', 'active', 'non-active'].map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => { setStatusFilter(status); setCurrentPage(1); }}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${statusFilter === status
+                                    ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                {status === 'all' ? 'All Products' : status.replace('-', ' ')}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="flex gap-3 w-full md:w-auto">
+                        {/* View Options */}
+                        <div className="flex gap-1 bg-gray-50 p-1 rounded-xl">
+                            <button className="p-2 rounded-lg bg-white shadow-sm ring-1 ring-black/5 text-gray-900">
+                                <Squares2X2Icon className="w-5 h-5" />
+                            </button>
+                            <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                                <TableCellsIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative w-full md:w-64">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={searchPro}
+                                onChange={(e) => { setSearchPro(e.target.value); setCurrentPage(1); }}
+                                className="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/5 transition-all text-sm"
+                            />
+                        </div>
+
+                        <button className="p-2.5 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+                            <FunnelIcon className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
-                <input
-                    type="text"
-                    placeholder="Search Product"
-                    value={searchPro}
-                    onChange={(e) => { setSearchPro(e.target.value); setCurrentPage(1); }}
-                    className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
             </div>
-            
+
             {/* Product Grid */}
             {paginatedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {paginatedProducts.map((product) => {
                         const inBasket = basket.includes(product.id)
                         return (
                             <div
                                 key={product.id}
-                                className={`relative border rounded-lg p-4 shadow bg-white transition ${inBasket ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-200'}`}
-                            >                                
-                                <Link href={`/dashboard/product-detail/${product.id}`}>
+                                className={`group relative bg-white rounded-3xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 border ${inBasket ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-100'
+                                    }`}
+                            >
+                                <div
+                                    onClick={() => setSelectedProduct(product)}
+                                    className="cursor-pointer overflow-hidden rounded-2xl bg-gray-100 aspect-square relative"
+                                >
                                     <Image
-                                        src={`/assets/${product.image}`}
+                                        src={
+                                            product.image
+                                                ? product.image.startsWith("http")
+                                                    ? product.image
+                                                    : `/assets/${product.image}`
+                                                : "/placeholder.png"
+                                        }
                                         alt={product.name}
-                                        width={300}
-                                        height={200}
-                                        className="aspect-square w-full bg-gray-200 object-cover rounded-2xl"
+                                        fill
+                                        sizes="100%"
+                                        className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
                                     />
-                                </Link>
-                                <div className="pt-3 px-2 pb-2">
-                                    <h5 className="text-lg font-semibold tracking-tight text-gray-900 mb-1">{product.name}</h5>
-                                    <div className="text-xs text-gray-500 mb-2">Smart Watch</div>
-                                    <div className="flex items-center mb-2">
-                                        <div className="flex items-center">
-                                            {[...Array(5)].map((_, i) => (
-                                                <svg
-                                                    key={i}
-                                                    className={`w-4 h-4 ${i < Math.floor(product.rating)
-                                                        ? "text-yellow-300"
-                                                        : "text-gray-200 dark:text-gray-600"
-                                                        }`}
-                                                    fill="currentColor"
-                                                    viewBox="0 0 22 20"
-                                                >
-                                                    <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734L12.376 1.27a1.534 1.534 0 0 0-2.752 0L7.365 6.581l-5.051.734a1.535 1.535 0 0 0-.85 2.62l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03 3.656-3.563a1.523 1.523 0 0 0 .387-1.575Z" />
-                                                </svg>
-                                            ))}
+
+                                    {inBasket && (
+                                        <div className="absolute top-3 right-3 bg-blue-500 text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg backdrop-blur-md bg-opacity-90">
+                                            Added
                                         </div>
-                                        <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-sm ms-3">
+                                    )}
+                                </div>
+                                <div className="mt-4 px-1">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <p className="text-xs font-medium text-gray-500 mb-1">Smart Watch</p>
+                                            <h3
+                                                onClick={() => setSelectedProduct(product)}
+                                                className="text-base font-bold text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+                                            >
+                                                {product.name}
+                                            </h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-1 mb-3">
+                                        {[...Array(5)].map((_, i) => (
+                                            <svg
+                                                key={i}
+                                                className={`w-4 h-4 ${i < Math.floor(product.rating)
+                                                    ? "text-yellow-400"
+                                                    : "text-gray-200"
+                                                    }`}
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        ))}
+                                        <span className="text-xs font-semibold text-gray-500 ml-1">
                                             {product.rating.toFixed(1)}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-2xl font-bold text-gray-900">{product.Price}</span>
-                                        {!inBasket && (
-                                            <button
-                                                onClick={() => handleToggleBasket(product.id)}
-                                                className="px-3 py-1 rounded text-sm font-medium mt-2 bg-blue-500 text-white hover:bg-blue-600"
-                                            >
-                                                Add to Basket
-                                            </button>
-                                        )}
-                                        {inBasket && (
-                                            <span className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 text-xs rounded">
-                                                In Basket
-                                            </span>
-                                        )}
+
+                                    <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                                        <span className="text-xl font-bold text-gray-900">${product.price}</span>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleToggleBasket(product.id);
+                                            }}
+                                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${inBasket
+                                                ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                                : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow-lg shadow-gray-900/10'
+                                                }`}
+                                        >
+                                            {inBasket ? 'Remove' : 'Add to Bag'}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -179,36 +248,70 @@ export default function ProductListComponent() {
                     })}
                 </div>
             ) : (
-                <div className="flex justify-center items-center">
-                    <div>
+                <div className="flex flex-col justify-center items-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
+                    <div className="relative w-48 h-48 mb-6">
                         <Image
-                            src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw8OEAkQEAgLCgkLBwoHDQ0NBxAICggNIB0iFiAdHx8kHCggJBolGx8fITEhJSkrLi4uFx8zODMtNygtLisBCgoKBQUFDgUFDisZExkrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIAMgAyAMBIgACEQEDEQH/xAAbAAEAAgMBAQAAAAAAAAAAAAAAAwQBAgUGB//EAD8QAAICAQIBBwgIBQMFAAAAAAECAAMEERITBSEiMUFRYRQjMlJxgZGSBhUzQmKhscEkQ1NyskSCojRUZMLR/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/APuMREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERATzvKnKlyNlaW0Y64vDuVGG+zPB7B3a845tTrPRSu+LWzJY1KNai6K7VhmQeBgSU2B1RgCAyK4BGjDWSREBERAREQEREBERAREQEREBESK+zapPb1CBi68L4t3So+Sx7do8JGTrrz6kzEDbiN67fNHEb12+aayLIyEqV3ewV1ou4sYE/Eb12+aVsrlOunTiZS1k9Sl+k3u65TrTIy+fc2DhnqPo5N6/+o/P2STbg4XPtrWw/eduLdc36mA+vVPoU5to70wX2/npMHlzT0sbOrHe2C7L+Wsz9fE/Z8n5di9jLhrWrfMRH1449Pk3LRe/yVb1/wCJMCbF5XptOiZas/ql+HZ8Dzy3xG9dvmnOORhZgKlKbbB91l4d1fuPOJCca/G56XbKxx149r7rlX8DfsYHX4jeu3zRxG9dvmlXCzEuXcjHmbaysu2ylu4jsMsQNuI3rt80cRvXb5prpzdY13bdIgbcRvXb5pumSw7dw8ZFEDoU3hvBu6TTlA6ac+hE6FFm5Qe3qMCWIiAiIgIiICUc1ucDsCy9KGaOl7VgUM42bG4f2u6vT+3Ua/lrLEhy6eIlqbihsqasMPut3xjOGVemthXzbMvo7xzH84EljhQzMwVFXczH0VWc7Ao8qZci4EYyNuxqG/zI7z2dwjlN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rcMAQeY/MpgdvkLPbHcYl5IXdw6HZvR/AT+hnp55HauZXscgZla+bb0eMo7PbOj9HuVWfWi4kZda9Fm6PlKDt9o7YHdiIgJ1E6l9koY1e4j1R0jOjAREQEREBERAREQI7wCG5tdBrObOqROfdSVJ5tV7DAiI+BkWPjrUoVE2oOlp6UliAiIgIiIG9TKN2q7tV5ppEQE8t9JOSuGXyKk1rbpXoq+j+MfvPUzBGuvNqD1gwPA1vptZW0I6SsGnRvTypRajcPlCjzh2+lZp94fuJDy1yZ5I+5VPkVr83/iOez2HslWqxkIKuUcdRDQPVchcqjJQhgEyqujan7jwM6k8FiWMl+G6E8RsquggfzEJ5wf190+hU0liObRe0wLtAAC82mo1kkwBMwEREBERAREQEREBERAxtHcPhMbR3D5ZtEDXaO4fLG0dw+WbRA12juHyxtHcPlm0QNdo7h8sbR3D5ZtEDXaO4fLG0dw+WbRAhycZLUdHrV63QoykekJ4XL+i2XUzLUi5VG7zbNeK7Kx3Nr+on0CIHm/o99GxQRdcVuzNvR0+yxh3L4+M9JEQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERA//Z"
-                            alt="No product found"
+                            src="/assets/no-product-found.svg"
+                            alt="No product found" // Fallback if image missing
                             width={300}
                             height={300}
+                            className="object-contain opacity-50"
                         />
-                        <div className="text-center text-gray-600 dark:text-gray-300">
-                            No product found
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
+                    <p className="text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex justify-between items-center mt-12 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                    <p className="text-sm text-gray-500">
+                        Showing <span className="font-semibold text-gray-900">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-semibold text-gray-900">{Math.min(currentPage * itemsPerPage, filterProduct.length)}</span> of <span className="font-semibold text-gray-900">{filterProduct.length}</span> results
+                    </p>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Previous
+                        </button>
+                        <div className="flex gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                    key={i + 1}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${currentPage === i + 1
+                                        ? 'bg-gray-900 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                                        }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
                         </div>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             )}
-            
-            {/* Pagination Controls */}
-            <div className="flex justify-between items-center mt-8">
-                <div className="text-sm text-gray-500">Show {itemsPerPage} per page</div>
-                <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => (
-                        <button
-                            key={i + 1}
-                            onClick={() => setCurrentPage(i + 1)}
-                            className={`w-8 h-8 rounded ${currentPage === i + 1 ? 'bg-orange-500 text-white' : 'bg-white border text-gray-700'}`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                </div>
-            </div>
+
+            <DetailComponent
+                product={selectedProduct}
+                isOpen={!!selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+            />
+
+            <CreateProductModal
+                isOpen={createModalOpen}
+                onClose={() => setCreateModalOpen(false)}
+            />
         </div>
     )
 }

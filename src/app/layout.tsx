@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Khmer } from "next/font/google";
 import "./globals.css";
+import I18nProvider from "@/components/I18nProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -10,6 +11,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const notoSansKhmer = Noto_Sans_Khmer({
+  variable: "--font-khmer",
+  subsets: ["khmer"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -25,16 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSansKhmer.variable} antialiased`}
       >
-        <header className="w-full bg-white shadow-sm py-4 px-8 mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            E-Commerce Dashboard
-          </h1>
-        </header>
-        <main className="container mx-auto px-4 py-6 bg-white rounded-lg shadow">
-          {children}
-        </main>
+        <I18nProvider>{children}</I18nProvider>
         <div id="modal-root"></div>
       </body>
     </html>

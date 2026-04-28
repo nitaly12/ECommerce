@@ -4,7 +4,7 @@ import StockListComponent from '../_components/StockListComponent';
 
 export default function StockPage() {
     return (
-        <div className="pt-10">
+        <div className="py-10">
             <StockListComponent/>
         </div>
     )
