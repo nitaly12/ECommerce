@@ -1,13 +1,11 @@
 'use client'
-import UpdateProductAction from "@/app/action/UpdateProductAction";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import {
     MagnifyingGlassIcon,
-    TrashIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
     EllipsisHorizontalIcon,
@@ -21,43 +19,58 @@ export default function UserListComponent() {
     const [currentPage, setCurrentPage] = useState(1);
     const userPerPage = 6;
 
-    interface User {
+    type ApiUser = {
+        id: number;
+        username: string;
+        firstName?: string | null;
+        lastName?: string | null;
+        phone?: string | null;
+        email?: string | null;
+        avatarUrl?: string | null;
+        role?: string | null;
+        enabled?: boolean | null;
+    };
+
+    interface UserRow {
         id: number;
         name: string;
         email: string;
         phone: string;
-        address: string;
-        image_src: string;
-        spending: number;
+        role: string;
+        enabled: boolean;
+        avatarUrl: string | null;
     }
 
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<UserRow[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchUsers() {
             setLoading(true);
-            const { data, error } = await supabase.from('users').select('*').order('id');
-            if (error) {
-                console.error('Error fetching users:', error);
-            } else {
-                setUsers(data || []);
+            try {
+                const result = await api.get<ApiUser[] | ApiUser>("/user");
+                const list = Array.isArray(result) ? result : [result];
+
+                setUsers(
+                    list.map((u) => ({
+                        id: u.id,
+                        name: [u.firstName, u.lastName].filter(Boolean).join(" ") || u.username,
+                        email: u.email ?? "",
+                        phone: u.phone ?? "",
+                        role: u.role ?? "",
+                        enabled: Boolean(u.enabled),
+                        avatarUrl: u.avatarUrl ?? null,
+                    }))
+                );
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                toast.error("Failed to load users");
             }
             setLoading(false);
         }
         fetchUsers();
     }, []);
 
-    const handleDeleteUser = async (id: number) => {
-        const { error } = await supabase.from('users').delete().eq('id', id);
-        if (error) {
-            toast.error('Failed to delete user');
-            console.error('Delete error:', error);
-        } else {
-            setUsers(prevUsers => prevUsers.filter(users => users.id !== id));
-            toast.success("User deleted successfully!");
-        }
-    };
     const filterUser = users.filter(user =>
         user.name.toLowerCase().includes(searchUser.toLowerCase()) ||
         user.email.toLowerCase().includes(searchUser.toLowerCase())
@@ -74,7 +87,7 @@ export default function UserListComponent() {
     const [isActionOpen, setIsActionOpen] = useState(false);
 
     return (
-        <div className="pt-8 pb-16 min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
+        <div className="pt-10 pb-16 min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 font-display">User Management</h1>
                 <p className="text-gray-500 mt-2">Manage user accounts and permissions</p>
@@ -107,7 +120,7 @@ export default function UserListComponent() {
                                     </button>
                                     <div className="h-px bg-gray-100 my-1"></div>
                                     <button className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
-                                        <TrashIcon className="w-4 h-4" /> Delete selected
+                                        Delete selected
                                     </button>
                                 </div>
                             </>
@@ -138,14 +151,19 @@ export default function UserListComponent() {
                                     </div>
                                 </th>
                                 <th scope="col" className="px-6 py-4 font-semibold">User</th>
-                                <th scope="col" className="px-6 py-4 font-semibold">Phone Only</th>
-                                <th scope="col" className="px-6 py-4 font-semibold">Location</th>
-                                <th scope="col" className="px-6 py-4 font-semibold">Spending</th>
-                                <th scope="col" className="px-6 py-4 font-semibold text-right">Action</th>
+                                <th scope="col" className="px-6 py-4 font-semibold">Phone</th>
+                                <th scope="col" className="px-6 py-4 font-semibold">Role</th>
+                                <th scope="col" className="px-6 py-4 font-semibold">Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filterUser.length > 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="text-center py-12 text-gray-500">
+                                        Loading users...
+                                    </td>
+                                </tr>
+                            ) : filterUser.length > 0 ? (
                                 currentUsers.map((user) => (
                                     <tr key={user.id} className="bg-white border-b border-gray-50 last:border-none hover:bg-gray-50/50 transition-colors">
                                         <td className="w-4 p-4">
@@ -157,7 +175,7 @@ export default function UserListComponent() {
                                             <div className="relative w-10 h-10 flex-shrink-0">
                                                 <Image
                                                     alt={user.name}
-                                                    src={`/assets/${user.image_src}`}
+                                                    src={user.avatarUrl || "/assets/category-page-04-image-card-04.jpg"}
                                                     fill
                                                     className="rounded-full object-cover bg-gray-100"
                                                 />
@@ -170,35 +188,24 @@ export default function UserListComponent() {
                                         <td className="px-6 py-4 text-gray-600 font-medium">
                                             {user.phone}
                                         </td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">{user.role || "-"}</td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                {user.address}
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.enabled ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                                                {user.enabled ? "Active" : "Disabled"}
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-gray-900 font-bold">${user.spending}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleDeleteUser(user.id)}
-                                                className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-50"
-                                                title="Delete User"
-                                            >
-                                                <TrashIcon className="w-5 h-5" />
-                                            </button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-12">
+                                    <td colSpan={5} className="text-center py-12">
                                         <div className="flex flex-col justify-center items-center">
                                             <div className="relative w-32 h-32 mb-4 opacity-50">
                                                 <Image
                                                     src="/assets/no-product-found.png"
                                                     alt="No users found"
                                                     fill
-                                                    className="object-contain" // Use existing asset or fallback
+                                                    className="object-contain"
                                                 />
                                             </div>
                                             <p className="text-gray-500">No users found matching your search.</p>

@@ -1,0 +1,40 @@
+{
+  "language": {
+    "label": "ភាសា",
+    "options": {
+      "en": "EN",
+      "km": "KM"
+    }
+  },
+  "dashboard": {
+    "loading": "កំពុងផ្ទុកផ្ទាំងគ្រប់គ្រង...",
+    "errorPrefix": "កំហុស",
+    "exportFailed": "នាំចេញបរាជ័យ",
+    "insightsLoadFailed": "មិនអាចផ្ទុកការវិភាគបានទេ",
+    "headerTitle": "ទិដ្ឋភាពទូទៅផ្ទាំងគ្រប់គ្រង",
+    "headerSubtitle": "សូមស្វាគមន៍មកវិញ! នេះជាអ្វីដែលកំពុងកើតឡើងថ្ងៃនេះ។",
+    "exportReport": "នាំចេញរបាយការណ៍",
+    "viewInsights": "មើលការវិភាគ",
+    "insightsTitle": "ការវិភាគអាជីវកម្ម",
+    "loadingShort": "កំពុងផ្ទុក...",
+    "users": "អ្នកប្រើប្រាស់",
+    "orders": "ការបញ្ជាទិញ",
+    "revenue": "ចំណូល",
+    "avgOrder": "តម្លៃមធ្យម",
+    "growthRate": "អត្រាកំណើន",
+    "bestMonth": "ខែល្អបំផុត",
+    "orderStatus": "ស្ថានភាពការបញ្ជាទិញ",
+    "pending": "កំពុងរង់ចាំ",
+    "completed": "បានបញ្ចប់",
+    "cancelled": "បានបោះបង់",
+    "performanceOverview": "ទិដ្ឋភាពប្រសិទ្ធភាព"
+  },
+  "navbar": {
+    "openSidebar": "បើកម៉ឺនុយចំហៀង",
+    "openUserMenu": "បើកម៉ឺនុយអ្នកប្រើ",
+    "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+    "settings": "ការកំណត់",
+    "earnings": "ចំណូល",
+    "signOut": "ចាកចេញ"
+  }
+}

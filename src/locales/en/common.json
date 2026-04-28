@@ -1,0 +1,40 @@
+{
+  "language": {
+    "label": "Language",
+    "options": {
+      "en": "EN",
+      "km": "KM"
+    }
+  },
+  "dashboard": {
+    "loading": "Loading dashboard...",
+    "errorPrefix": "Error",
+    "exportFailed": "Export failed",
+    "insightsLoadFailed": "Failed to load insights",
+    "headerTitle": "Dashboard Overview",
+    "headerSubtitle": "Welcome back! Here's what's happening today.",
+    "exportReport": "Export Report",
+    "viewInsights": "View Insights",
+    "insightsTitle": "Business Insights",
+    "loadingShort": "Loading...",
+    "users": "Users",
+    "orders": "Orders",
+    "revenue": "Revenue",
+    "avgOrder": "Avg Order",
+    "growthRate": "Growth Rate",
+    "bestMonth": "Best Month",
+    "orderStatus": "Order Status",
+    "pending": "Pending",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "performanceOverview": "Performance Overview"
+  },
+  "navbar": {
+    "openSidebar": "Open sidebar",
+    "openUserMenu": "Open user menu",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "earnings": "Earnings",
+    "signOut": "Sign out"
+  }
+}

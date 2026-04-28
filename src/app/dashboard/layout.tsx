@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <SideBarComponent />
         </div>
 
-        <main className="flex-1 p-6 ">
+        <main className="flex-1">
           {children}
         </main>
       </div>

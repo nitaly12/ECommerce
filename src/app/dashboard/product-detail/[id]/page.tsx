@@ -130,7 +130,7 @@ export default function ProductDetailPage() {
         </button>
       </div>
       <DetailComponent
-        product={product}
+        product={{...product, price: Number(product?.Price?.replace('$', ''))}}
         isOpen={true}
         onClose={() => router.back()}
       />

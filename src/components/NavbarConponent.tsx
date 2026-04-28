@@ -3,7 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import CreateProductAction from "@/app/action/CreateProductAction";
+import { api } from "@/lib/api";
+import { useTranslation } from "react-i18next";
 export default function NavbarComponent() {
+    const { t } = useTranslation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +40,12 @@ export default function NavbarComponent() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+    const fetchStockItems = async () => {
+        const data = await api.get<any[]>('/api/stock-items');
+    };
+    useEffect(() => {
+        fetchStockItems();
+    }, []);
     return (
         <div>
             <nav className="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -44,7 +53,7 @@ export default function NavbarComponent() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start rtl:justify-end">
                             <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
-                                <span className="sr-only">Open sidebar</span>
+                                <span className="sr-only">{t("navbar.openSidebar")}</span>
                                 <svg className="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path clipRule="evenodd" fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
                                 </svg>
@@ -55,7 +64,7 @@ export default function NavbarComponent() {
                             </a>
                         </div>
                         <div className="flex items-center">
-                            <CreateProductAction/>
+                            <CreateProductAction onProductCreated={fetchStockItems} />
                             <div ref={menuRef} className="relative flex items-center ms-3">
                                 {/* Toggle Button */}
                                 <button
@@ -64,7 +73,7 @@ export default function NavbarComponent() {
                                     className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                                     aria-expanded={mobileMenuOpen}
                                 >
-                                    <span className="sr-only">Open user menu</span>
+                                    <span className="sr-only">{t("navbar.openUserMenu")}</span>
                                     <Image
                                         className="w-8 h-8 rounded-full"
                                         src="/assets/category-page-04-image-card-04.jpg"
@@ -90,7 +99,7 @@ export default function NavbarComponent() {
                                                     className="block px-4 py-2 text-sm text-black hover:bg-gray-100 dark:text-black dark:hover:bg-gray-600 dark:hover:text-white"
                                                     role="menuitem"
                                                 >
-                                                    Dashboard
+                                                    {t("navbar.dashboard")}
                                                 </a>
                                             </li>
                                             <li>
@@ -99,7 +108,7 @@ export default function NavbarComponent() {
                                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-black dark:hover:bg-gray-600 dark:hover:text-white"
                                                     role="menuitem"
                                                 >
-                                                    Settings
+                                                    {t("navbar.settings")}
                                                 </a>
                                             </li>
                                             <li>
@@ -108,7 +117,7 @@ export default function NavbarComponent() {
                                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-black dark:hover:bg-gray-600 dark:hover:text-white"
                                                     role="menuitem"
                                                 >
-                                                    Earnings
+                                                    {t("navbar.earnings")}
                                                 </a>
                                             </li>
                                             <li>
@@ -117,7 +126,7 @@ export default function NavbarComponent() {
                                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-red-500 dark:hover:bg-gray-600 dark:hover:text-white"
                                                     role="menuitem"
                                                 >
-                                                    Sign out
+                                                    {t("navbar.signOut")}
                                                 </a>
                                             </li>
                                         </ul>

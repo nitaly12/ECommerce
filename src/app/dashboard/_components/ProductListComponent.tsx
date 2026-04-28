@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DetailComponent from "./DetailComponent";
 import CreateProductModal from "./CreateProductModal";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { toast } from "react-toastify";
 import {
     Squares2X2Icon,
@@ -38,39 +38,18 @@ export default function ProductListComponent() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Realtime subscription
-        const channel = supabase
-            .channel('products_changes')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'products' },
-                (payload) => {
-                    if (payload.eventType === 'INSERT') {
-                        setProducts((prev) => [payload.new as Product, ...prev]);
-                    } else if (payload.eventType === 'DELETE') {
-                        setProducts((prev) => prev.filter((p) => p.id !== payload.old.id));
-                    }
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, []);
-
-    useEffect(() => {
-        async function fetchProducts() {
-            setLoading(true);
-            const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
-            if (error) {
-                console.error('Error fetching products:', error);
-            } else {
-                setProducts(data || []);
-            }
-            setLoading(false);
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            const data = await api.get<Product[]>('/api/products');
+            setProducts(data || []);
+        } catch (error) {
+            console.error('Error fetching products:', error);
         }
+        setLoading(false);
+    };
+
+    useEffect(() => {
         fetchProducts();
     }, []);
 
@@ -114,7 +93,7 @@ export default function ProductListComponent() {
         router.push(`/dashboard/basket?items=${query}`)
     }
     return (
-        <div className="pt-8 pb-16 flex flex-col min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
+        <div className="pt-10 pb-16 flex flex-col min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
             {/* Dashboard Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <div>
@@ -123,7 +102,7 @@ export default function ProductListComponent() {
                 </div>
                 <button
                     onClick={() => setCreateModalOpen(true)}
-                    className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/10 hover:shadow-xl hover:-translate-y-0.5 mt-4 md:mt-0"
+                    className="inline-flex items-center gap-2 bg-gray-900 text-white px-2 py-2 rounded-xl font-semibold hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/10 hover:shadow-xl hover:-translate-y-0.5 mt-4 md:mt-0"
                 >
                     <PlusIcon className="w-5 h-5" />
                     <span>Add Product</span>

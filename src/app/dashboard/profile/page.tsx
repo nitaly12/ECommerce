@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { api } from "@/lib/api";
 import {
   PencilSquareIcon,
   CameraIcon,
@@ -12,9 +13,23 @@ import {
   CheckIcon,
 } from "@heroicons/react/24/outline";
 
+type ProfileResponse = {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  avatarUrl?: string;
+  role?: string;
+};
+
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
+    username: "",
     firstName: "",
     lastName: "",
     phone: "",
@@ -23,38 +38,144 @@ export default function Profile() {
     confirmPassword: "",
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [originalProfile, setOriginalProfile] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+  });
 
   useEffect(() => {
-    const fetchedData = {
-      firstName: "Nita",
-      lastName: "Ly",
-      phone: "123-45-678",
-      email: "nitaly123@gmail.com",
-      password: "password123",
-      confirmPassword: "password123",
+    const fetchProfile = async () => {
+      try {
+        const profile = await api.get<ProfileResponse>("/api/profile");
+        const mappedProfile = {
+          username: profile.username ?? "",
+          firstName: profile.firstName ?? "",
+          lastName: profile.lastName ?? "",
+          phone: profile.phone ?? "",
+          email: profile.email ?? "",
+        };
+        setOriginalProfile(mappedProfile);
+        setFormData((prev) => ({
+          ...prev,
+          ...mappedProfile,
+        }));
+        setAvatarUrl(profile.avatarUrl ?? null);
+      } catch (error) {
+        console.error("Failed to load profile", error);
+        alert("Failed to load profile.");
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setFormData(fetchedData);
+
+    fetchProfile();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleToggleEdit = () => {
-    if (isEditing) {
-      console.log("Saving updated data:", formData);
+  const handleToggleEdit = async () => {
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
     }
-    setIsEditing(!isEditing);
+
+    try {
+      setIsSaving(true);
+      await api.put("/api/profile", {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        email: formData.email,
+      });
+
+      if (formData.password) {
+        if (formData.password !== formData.confirmPassword) {
+          alert("Password confirmation does not match.");
+          return;
+        }
+
+        await api.put("/api/profile/password", {
+          newPassword: formData.password,
+        });
+      }
+
+      setOriginalProfile({
+        username: formData.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        email: formData.email,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        password: "",
+        confirmPassword: "",
+      }));
+      setIsEditing(false);
+      alert("Profile updated successfully.");
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      alert("Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
-      console.log("Selected image:", file);
+
+      try {
+        const token = localStorage.getItem("token");
+        const form = new FormData();
+        form.append("avatar", file);
+
+        const res = await fetch("http://localhost:8080/api/profile/avatar", {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          body: form,
+        });
+
+        if (!res.ok) {
+          throw new Error(`Avatar upload failed: ${res.status}`);
+        }
+
+        const result = await res.json().catch(() => null);
+        if (result?.avatarUrl) {
+          setAvatarUrl(result.avatarUrl);
+          setSelectedImage(null);
+        }
+      } catch (error) {
+        console.error("Failed to upload avatar", error);
+        alert("Failed to upload avatar.");
+      }
     }
   };
+
+  const handleCancelEdit = () => {
+    setFormData((prev) => ({
+      ...prev,
+      ...originalProfile,
+      password: "",
+      confirmPassword: "",
+    }));
+    setIsEditing(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="pt-20 pb-16 min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
+        Loading profile...
+      </div>
+    );
+  }
 
   return (
     <div className="pt-20 pb-16 min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
@@ -78,6 +199,7 @@ export default function Profile() {
                 className="rounded-full object-cover ring-4 ring-gray-100"
                 src={
                   selectedImage ||
+                  avatarUrl ||
                   "/assets/category-page-04-image-card-04.jpg"
                 }
                 alt="User profile"
@@ -100,13 +222,13 @@ export default function Profile() {
             </div>
 
             {/* User Info */}
-            <h2 className="text-xl font-bold text-gray-900">
-              {formData.firstName} {formData.lastName}
+            <h2 className="text-lg font-bold text-gray-900">
+              {formData.firstName} {formData.username}
             </h2>
             <p className="text-sm text-gray-500 mt-1">{formData.email}</p>
 
             {/* Quick Stats */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
+            {/* <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-gray-900">28</p>
@@ -117,15 +239,15 @@ export default function Profile() {
                   <p className="text-xs text-gray-500 mt-1">Spent</p>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Role Badge */}
-            <div className="mt-6">
+            {/* <div className="mt-6">
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
                 <UserIcon className="w-3 h-3 mr-1.5" />
                 Admin
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -145,6 +267,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={handleToggleEdit}
+                disabled={isSaving}
                 className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm ${isEditing
                     ? "bg-green-600 text-white shadow-green-200 hover:bg-green-700"
                     : "bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700"
@@ -153,7 +276,7 @@ export default function Profile() {
                 {isEditing ? (
                   <>
                     <CheckIcon className="w-4 h-4" />
-                    Save Changes
+                    {isSaving ? "Saving..." : "Save Changes"}
                   </>
                 ) : (
                   <>
@@ -162,6 +285,15 @@ export default function Profile() {
                   </>
                 )}
               </button>
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="ml-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
 
             {/* Form Body */}

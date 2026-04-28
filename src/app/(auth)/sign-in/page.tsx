@@ -10,22 +10,49 @@ import { toast, ToastContainer } from 'react-toastify';
 export default function LoginPage() {
     const router = useRouter();
     //from state 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     //condition 
-    const handleSignIn = (e: React.FormEvent) => {
+    const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !password) {
-            toast.error('please fill in all the fields.');
+    
+        if (!username || !password) {
+            toast.error('Please fill in all the fields.');
             return;
         }
-        else {
-            toast.success("Signed In successfully!");
+    
+        try {
+            const res = await fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            });
+    
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || 'Login failed');
+            }
+    
+            const data = await res.json();
+    
+            // Save JWT token
+            localStorage.setItem('token', data.token);
+    
+            toast.success('Signed in successfully!');
+    
             setTimeout(() => {
                 router.push('/dashboard');
-            }, 1500);
+            }, 1000);
+    
+        } catch (error: any) {
+            toast.error(error.message || 'Invalid credentials');
         }
-    }
+    };
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-indigo-600">
             <div className="text-sm absolute top-0 left-0 p-6 text-purple-700 flex items-center gap-2 cursor-pointer">
@@ -46,12 +73,12 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSignIn} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Email</label>
+                            <label className="block text-sm font-medium text-gray-700">Username</label>
                             <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Enter your username"
                                 className="w-full mt-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
                         </div>

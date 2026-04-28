@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import UpdateProductAction from "@/app/action/UpdateProductAction";
 import { useState, useEffect } from "react"
 import Image from 'next/image';
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import {
     MagnifyingGlassIcon,
     TrashIcon,
@@ -28,55 +28,28 @@ export default function StockListComponent() {
     const [products, setProduct] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const channel = supabase
-            .channel('stock_items_changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'stock_items'
-                },
-                (payload) => {
-                    if (payload.eventType === 'INSERT') {
-                        setProduct((prev) => [...prev, payload.new as StockItem]);
-                        toast.info("New stock item received");
-                    } else if (payload.eventType === 'DELETE') {
-                        setProduct((prev) => prev.filter((item) => item.id !== payload.old.id));
-                    }
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, []);
-
-    useEffect(() => {
-        async function fetchStockItems() {
-            setLoading(true);
-            const { data, error } = await supabase.from('stock_items').select('*').order('id');
-            if (error) {
-                console.error('Error fetching stock items:', error);
-            } else {
-                setProduct(data || []);
-            }
-            setLoading(false);
+    const fetchStockItems = async () => {
+        setLoading(true);
+        try {
+            const data = await api.get<StockItem[]>('/api/stock-items');
+            setProduct(data || []);
+        } catch (error) {
+            console.error('Error fetching stock items:', error);
         }
+        setLoading(false);
+    };
+    useEffect(() => {
         fetchStockItems();
     }, []);
-
     //delete product
     const handleDelete = async (id: number) => {
-        const { error } = await supabase.from('stock_items').delete().eq('id', id);
-        if (error) {
-            toast.error('Failed to delete item');
-            console.error('Delete error:', error);
-        } else {
+        try {
+            await api.delete(`/api/stock-items/${id}`);
             setProduct(prevUsers => prevUsers.filter(pro => pro.id !== id));
             toast.success("Product deleted successfully!");
+        } catch (error) {
+            toast.error('Failed to delete item');
+            console.error('Delete error:', error);
         }
     };
 
@@ -92,7 +65,7 @@ export default function StockListComponent() {
     const totalPages = Math.ceil(filterItems.length / productPerPage);
 
     return (
-        <div className="pt-8 pb-16 min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
+        <div className="pt-10 pb-16 min-h-screen bg-gray-50/50 text-gray-900 px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 font-display">Stock Management</h1>
                 <p className="text-gray-500 mt-2">View and manage your current stock inventory</p>
@@ -154,7 +127,8 @@ export default function StockListComponent() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <UpdateProductAction
-                                                // Pass props if needed, keeping structure from original
+                                                    product={pro}
+                                                    onUpdated={fetchStockItems}
                                                 />
                                             </div>
                                         </td>

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { toast } from "react-toastify";
 import {
     XMarkIcon,
@@ -46,27 +46,15 @@ export default function CreateProductModal({ isOpen, onClose }: CreateProductMod
             return;
         }
         const file = e.target.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
+        const reader = new FileReader();
         setUploading(true);
-        const { error: uploadError } = await supabase.storage
-            .from('products')
-            .upload(filePath, file);
-
-        if (uploadError) {
-            toast.error('Error uploading image');
-            console.error(uploadError);
+        reader.onloadend = () => {
+            const previewDataUrl = reader.result as string;
+            setFormData({ ...formData, image: file.name });
+            setPreviewUrl(previewDataUrl);
             setUploading(false);
-            return;
-        }
-
-        const { data } = supabase.storage.from('products').getPublicUrl(filePath);
-
-        setFormData({ ...formData, image: data.publicUrl });
-        setPreviewUrl(data.publicUrl);
-        setUploading(false);
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -78,18 +66,14 @@ export default function CreateProductModal({ isOpen, onClose }: CreateProductMod
         }
 
         setLoading(true);
-        const { error } = await supabase.from("products").insert({
-            name: formData.name,
-            price: parseFloat(formData.price),
-            rating: parseFloat(formData.rating),
-            status: formData.status,
-            image: formData.image, // Just use the filename string
-        });
-
-        if (error) {
-            console.error("Insert error:", error);
-            toast.error("Failed to create product.");
-        } else {
+        try {
+            await api.post('/api/products', {
+                name: formData.name,
+                price: parseFloat(formData.price),
+                rating: parseFloat(formData.rating),
+                status: formData.status,
+                image: formData.image,
+            });
             toast.success("Product created successfully!");
             setFormData({
                 name: "",
@@ -100,6 +84,9 @@ export default function CreateProductModal({ isOpen, onClose }: CreateProductMod
             });
             setPreviewUrl(null);
             onClose();
+        } catch (error) {
+            console.error("Insert error:", error);
+            toast.error("Failed to create product.");
         }
         setLoading(false);
     };

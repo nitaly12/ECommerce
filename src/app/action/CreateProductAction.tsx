@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { toast } from "react-toastify";
 import {
     XMarkIcon,
@@ -45,29 +45,44 @@ export default function CreateProductAction({ onProductCreated }: CreateProductA
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+    
         if (!formData.name || !formData.category || !formData.price) {
             toast.error("Please fill in all required fields.");
             return;
         }
-
+    
         setLoading(true);
-        const { error } = await supabase.from("stock_items").insert({
-            name: formData.name,
-            color: formData.color,
-            category: formData.category,
-            price: parseFloat(formData.price),
-        });
-
-        if (error) {
-            console.error("Insert error:", error);
-            toast.error("Failed to create product.");
-        } else {
+    
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:8080/api/stock-items", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    color: formData.color,
+                    category: formData.category,
+                    price: Number(formData.price),
+                }),
+            });
+    
+            if (!res.ok) {
+                throw new Error("API error");
+            }
+    
             toast.success("Product created successfully!");
             setFormData({ name: "", color: "#3b82f6", category: "", price: "" });
             setMenuOpen(false);
             onProductCreated?.();
+    
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to create product.");
         }
+    
         setLoading(false);
     };
 
@@ -225,6 +240,7 @@ export default function CreateProductAction({ onProductCreated }: CreateProductA
                                     </button>
                                     <button
                                         type="submit"
+                                        onClick={handleSubmit}
                                         disabled={loading}
                                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
